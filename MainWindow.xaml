@@ -1,0 +1,57 @@
+﻿<Window x:Class="TicTacToeWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TicTacToeWPF"
+        mc:Ignorable="d"
+        Title="Sam's Ultra AI-Powered T.T.T Opponent"
+        Height="680"
+        Width="630"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="200"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Background" Value="LightPink"/>
+            <Setter Property="Foreground" Value="#B8001F"/>
+            <Setter Property="FontFamily" Value="Comic Sans MS"/>
+            <Setter Property="FontSize" Value="150"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Window.Resources>
+    <Border Padding="5">
+        <Grid Name="Board">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <!--Menu grid-->
+            <Grid Grid.Row="0" Grid.ColumnSpan="3" Height="30" Width="auto" VerticalAlignment="Top">
+                <Menu Height="30" Width="auto" FontSize="18">
+                    <MenuItem Header="Game"/>
+                    <MenuItem Header="About"/>
+                </Menu>
+            </Grid>
+            <!--First row-->
+            <Button x:Name="Button0" Grid.Row="1" Grid.Column="0" Click="Button_Click">X</Button>
+            <Button x:Name="Button1" Grid.Row="1" Grid.Column="1" Click="Button_Click">O</Button>
+            <Button x:Name="Button2" Grid.Row="1" Grid.Column="2" Click="Button_Click"></Button>
+            <!--Second row-->
+            <Button x:Name="Button3" Grid.Row="2" Grid.Column="0" Click="Button_Click"></Button>
+            <Button x:Name="Button4" Grid.Row="2" Grid.Column="1" Click="Button_Click"></Button>
+            <Button x:Name="Button5" Grid.Row="2" Grid.Column="2" Click="Button_Click"></Button>
+            <!--Third row-->                                     
+            <Button x:Name="Button6" Grid.Row="3" Grid.Column="0" Click="Button_Click"></Button>
+            <Button x:Name="Button7" Grid.Row="3" Grid.Column="1" Click="Button_Click"></Button>
+            <Button x:Name="Button8" Grid.Row="3" Grid.Column="2" Click="Button_Click"></Button>
+        </Grid>                                                  
+    </Border>
+</Window>
