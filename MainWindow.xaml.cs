@@ -40,18 +40,14 @@ namespace TicTacToeWPF
         {
             InitializeComponent();
             this.Show();
-            NewGame();
             AddPlayerName();
-
-            if(!_player.FirstTurn)
-            {
-                CpuPlaysRandom();
-            }
+            NewGame();
         }
 
 
         private void NewGame()
         {
+            winner = null;
             for(int i = 0; i < _board.Length; i++)
             {
                 _board[i] = MarkType.EMPTY;
@@ -66,6 +62,36 @@ namespace TicTacToeWPF
 
             EnableBoard();
             ChooseFirstTurn();
+
+            if (!_player.FirstTurn)
+            {
+                CpuPlaysRandom();
+            }
+        }
+
+
+        private void NewGame(object sender, RoutedEventArgs e)
+        {
+            winner = null;
+            for (int i = 0; i < _board.Length; i++)
+            {
+                _board[i] = MarkType.EMPTY;
+            }
+
+            List<Button> allButtons = Board.Children.OfType<Button>().ToList();
+
+            foreach (var button in allButtons)
+            {
+                button.ClearValue(ContentProperty);
+            }
+
+            EnableBoard();
+            ChooseFirstTurn();
+
+            if (!_player.FirstTurn)
+            {
+                CpuPlaysRandom();
+            }
         }
 
 
@@ -75,14 +101,14 @@ namespace TicTacToeWPF
 
             if (firstTurnResult == MessageBoxResult.Yes)
             {
-                _player.Mark = MarkType.X;
                 _player.FirstTurn = true;
+                _player.Mark = MarkType.X;
                 _cpuAi.Mark = MarkType.O;
             }
             else
             {
-                _player.Mark = MarkType.O;
                 _player.FirstTurn = false;
+                _player.Mark = MarkType.O;
                 _cpuAi.Mark = MarkType.X;
             }
         }
@@ -98,13 +124,21 @@ namespace TicTacToeWPF
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
+
+            if(!button.IsEnabled)
+            {
+                NewGame();
+            }
+
             int index = _buttonIndex[button.Name.ToString()];
 
             if(button.Content == null)
             {
-                button.Content = _player.Mark;
                 _board[index] = _player.Mark;
+                button.Content = _player.Mark;
             }
+
+            // TODO: Ska inte gå att klicka på samma ruta som Cpu
 
             if(GameOver())
             {
@@ -188,28 +222,23 @@ namespace TicTacToeWPF
         {
             DisableBoard();
 
-            switch (winner)
+            if (winner == _player.Name)
             {
-                case nameof(_player):
-                    //Player wins
-                    break;
-                case nameof(_cpuAi):
-                    // Cpu wins
-                    break;
-                default:
-                    // Tie
-                    break;
+                MessageBox.Show($"The winner is {winner}", "Congatulations!");
+                _player.Score++;
             }
-            MessageBox.Show($"The winner is {winner}", "Congatulations!");
-            // show gratulations / result
-            // Ev keep score
+            else if(winner == _cpuAi.Name)
+            {
+                MessageBox.Show($"The winner is {winner}", "You lost!");
+                _cpuAi.Score++;
+            }
+            else
+            {
+                MessageBox.Show("Game is a tie", "Try again!");
+            }
+            // Show score in UI
         }
 
-
-        private void KeepScore()
-        {
-
-        }
 
         private void DisableBoard()
         {
@@ -229,6 +258,18 @@ namespace TicTacToeWPF
             {
                 b.IsEnabled = true;
             }
+        }
+
+
+        private void ExitGame(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void ShowAbout(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Sam's Ultra AI-Powered T.T.T Opponent \n" +
+                "Made with <3 november 2024", "About this game");
         }
 
         // Entities: Player, CPU-_player, signs(X/O), board, buttons, current score

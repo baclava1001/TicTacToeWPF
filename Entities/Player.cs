@@ -11,5 +11,6 @@ namespace TicTacToeWPF.Entities
         public string Name { get; set; }
         public MarkType Mark;
         public bool FirstTurn { get; set; }
+        public int Score { get; set; }
     }
 }
