@@ -41,8 +41,8 @@
                 </Menu>
             </Grid>
             <!--First row-->
-            <Button x:Name="Button0" Grid.Row="1" Grid.Column="0" Click="Button_Click">X</Button>
-            <Button x:Name="Button1" Grid.Row="1" Grid.Column="1" Click="Button_Click">O</Button>
+            <Button x:Name="Button0" Grid.Row="1" Grid.Column="0" Click="Button_Click"></Button>
+            <Button x:Name="Button1" Grid.Row="1" Grid.Column="1" Click="Button_Click"></Button>
             <Button x:Name="Button2" Grid.Row="1" Grid.Column="2" Click="Button_Click"></Button>
             <!--Second row-->
             <Button x:Name="Button3" Grid.Row="2" Grid.Column="0" Click="Button_Click"></Button>

@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace TicTacToeWPF.Entities
 {
-    public class Player
+    class CpuAI
     {
-        public string Name { get; set; }
+        public string Name { get; } = nameof(CpuAI);
         public MarkType Mark;
-        public bool FirstTurn { get; set; }
     }
 }
