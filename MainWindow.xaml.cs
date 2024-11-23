@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -17,11 +18,11 @@ namespace TicTacToeWPF
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private Player _player = new();
         private CpuAI _cpuAi = new();
-        private string winner;
+        private string _winner;
         private MarkType[] _board = new MarkType[9];
         private Dictionary<string, int> _buttonIndex = new()
         {
@@ -36,18 +37,49 @@ namespace TicTacToeWPF
             {"Button8", 8}
         };
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private string playerResult;
+        public string PlayerResult
+        {
+            get
+            {
+                return playerResult;
+            }
+            set
+            {
+                playerResult = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PlayerResult));
+            }
+        }
+
+        private string cpuAiResult;
+        public string CpuAiResult
+        {
+            get
+            {
+                return cpuAiResult;
+            }
+            set
+            {
+                cpuAiResult = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(CpuAiResult));
+            }
+        }
+
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
             this.Show();
             AddPlayerName();
+            UpdateNameAndResult();
             NewGame();
         }
 
 
         private void NewGame()
         {
-            winner = null;
+            _winner = "";
             for(int i = 0; i < _board.Length; i++)
             {
                 _board[i] = MarkType.EMPTY;
@@ -72,7 +104,7 @@ namespace TicTacToeWPF
 
         private void NewGame(object sender, RoutedEventArgs e)
         {
-            winner = null;
+            _winner = "";
             for (int i = 0; i < _board.Length; i++)
             {
                 _board[i] = MarkType.EMPTY;
@@ -97,7 +129,7 @@ namespace TicTacToeWPF
 
         private void ChooseFirstTurn()
         {
-            MessageBoxResult firstTurnResult = MessageBox.Show("Du you want to go first?", "First turn", MessageBoxButton.YesNo);
+            MessageBoxResult firstTurnResult = MessageBox.Show("Do you want to go first?", "First turn", MessageBoxButton.YesNo);
 
             if (firstTurnResult == MessageBoxResult.Yes)
             {
@@ -118,41 +150,34 @@ namespace TicTacToeWPF
         {
             NameDialogBox nameDialogBox = new NameDialogBox(_player);
             nameDialogBox.ShowDialog();
+
         }
 
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
-
-            if(!button.IsEnabled)
-            {
-                NewGame();
-            }
-
             int index = _buttonIndex[button.Name.ToString()];
 
-            if(button.Content == null)
+            if(button.Content == null && _board[index] == MarkType.EMPTY)
             {
                 _board[index] = _player.Mark;
                 button.Content = _player.Mark;
-            }
 
-            // TODO: Ska inte gå att klicka på samma ruta som Cpu
+                if(GameOver())
+                {
+                    PresentWinner();
+                    return;
+                }
 
-            if(GameOver())
-            {
-                PresentWinner();
-                return;
-            }
+                // If board is not full && game not over - pause a moment (and maybe display some loading text) then let cpu ai play a random or not so random turn (Progressbar for effect? ;-)
+                CpuPlaysRandom();
 
-            // If board is not full && game not over - pause a moment (and maybe display some loading text) then let cpu ai play a random or not so random turn (Progressbar for effect? ;-)
-            CpuPlaysRandom();
-
-            if (GameOver())
-            {
-                PresentWinner();
-                return;
+                if (GameOver())
+                {
+                    PresentWinner();
+                    return;
+                }
             }
         }
 
@@ -193,26 +218,26 @@ namespace TicTacToeWPF
                 new MarkType[] {_board[2], _board[4], _board[6] }, // Diagonal from top right
             };
 
-            foreach(MarkType[] mark in _winningCombinations)
+            foreach(MarkType[] combination in _winningCombinations)
             {
-                if (mark[0] == _cpuAi.Mark &&
-                    mark[1] == _cpuAi.Mark &&
-                    mark[2] == _cpuAi.Mark)
+                if (combination[0] == _cpuAi.Mark &&
+                    combination[1] == _cpuAi.Mark &&
+                    combination[2] == _cpuAi.Mark)
                 {
-                    winner = _cpuAi.Name;
+                    _winner = _cpuAi.Name;
                     return true;
                 }
-                else if (mark[0] == _player.Mark &&
-                    mark[1] == _player.Mark &&
-                    mark[2] == _player.Mark)
+                else if (combination[0] == _player.Mark &&
+                    combination[1] == _player.Mark &&
+                    combination[2] == _player.Mark)
                 {
-                    winner = _player.Name;
+                    _winner = _player.Name;
                     return true;
                 }
-                else if (!_board.Contains(MarkType.EMPTY) && !string.IsNullOrEmpty(winner))
-                {
-                    return true;
-                }
+            }
+            if (!_board.Contains(MarkType.EMPTY))
+            {
+                return true;
             }
             return false;
         }
@@ -222,21 +247,21 @@ namespace TicTacToeWPF
         {
             DisableBoard();
 
-            if (winner == _player.Name)
+            if (_winner == _player.Name)
             {
-                MessageBox.Show($"The winner is {winner}", "Congatulations!");
+                MessageBox.Show($"The winner is {_winner}", "Congatulations!");
                 _player.Score++;
             }
-            else if(winner == _cpuAi.Name)
+            else if(_winner == _cpuAi.Name)
             {
-                MessageBox.Show($"The winner is {winner}", "You lost!");
+                MessageBox.Show($"The winner is {_winner}", "You lost!");
                 _cpuAi.Score++;
             }
             else
             {
                 MessageBox.Show("Game is a tie", "Try again!");
             }
-            // Show score in UI
+            UpdateNameAndResult();
         }
 
 
@@ -261,6 +286,13 @@ namespace TicTacToeWPF
         }
 
 
+        private void UpdateNameAndResult()
+        {
+            playerResult = $"{_player.Name} ({_player.Mark}): {_player.Score}";
+            cpuAiResult = $"{_cpuAi.Name} ({_cpuAi.Mark}): {_cpuAi.Score}";
+        }
+
+
         private void ExitGame(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -276,7 +308,7 @@ namespace TicTacToeWPF
         // Start new game (immediatly?)
         // Choose if you want to start (play X) or if AI should start
         // When button is klicked with mouse it is filled with X or O
-        // When three of the same sign are in a row, the game is stopped and winner is announced
+        // When three of the same sign are in a row, the game is stopped and _winner is announced
         // Simple score keeping?
     }
 }

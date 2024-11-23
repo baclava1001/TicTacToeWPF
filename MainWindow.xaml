@@ -81,8 +81,8 @@
                    VerticalAlignment="Top"
                    Margin="0,0,0,0"
                    HorizontalAlignment="Left" />
-                <Label Name="HumanScore" FontSize="16" VerticalContentAlignment="Bottom">Placeholder: 1</Label>
-                <Label Name="CpuScore" FontSize="16" VerticalContentAlignment="Bottom">Placeholder: 100 0000 0000</Label>
+                <Label Name="HumanScore" FontSize="16" VerticalContentAlignment="Bottom" Content="{Binding PlayerResult, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Name="CpuScore" FontSize="16" VerticalContentAlignment="Bottom" Content="{Binding PlayerResult, UpdateSourceTrigger=PropertyChanged}"></Label>
             </StackPanel>
         </Grid>                                                  
     </Border>
