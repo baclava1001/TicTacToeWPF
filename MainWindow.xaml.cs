@@ -38,6 +38,11 @@ namespace TicTacToeWPF
         };
 
         public event PropertyChangedEventHandler? PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private string playerResult;
         public string PlayerResult
         {
@@ -47,8 +52,11 @@ namespace TicTacToeWPF
             }
             set
             {
-                playerResult = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PlayerResult));
+                if (playerResult != value)
+                {
+                    playerResult = value;
+                    OnPropertyChanged(nameof(PlayerResult));
+                }
             }
         }
 
@@ -61,116 +69,170 @@ namespace TicTacToeWPF
             }
             set
             {
-                cpuAiResult = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(CpuAiResult));
+                if (cpuAiResult != value)
+                {
+                    cpuAiResult = value;
+                    OnPropertyChanged(nameof(CpuAiResult));
+                }
             }
         }
 
         public MainWindow()
         {
-            DataContext = this;
-            InitializeComponent();
-            this.Show();
-            AddPlayerName();
-            UpdateNameAndResult();
-            NewGame();
+            try
+            {
+                InitializeComponent();
+                DataContext = this;
+                this.Show();
+                AddPlayerName();
+                NewGame();
+            }
+            catch(Exception ex)
+            {
+                HandleError("Sorry, an error have occured while loading the game :-\\ \n" +
+                    "Try shutting down and starting over.", ex);
+            }
         }
 
 
         private void NewGame()
         {
-            _winner = "";
-            for(int i = 0; i < _board.Length; i++)
+            try
             {
-                _board[i] = MarkType.EMPTY;
+                _winner = "";
+                for (int i = 0; i < _board.Length; i++)
+                {
+                    _board[i] = MarkType.EMPTY;
+                }
+
+                List<Button> allButtons = Board.Children.OfType<Button>().ToList();
+
+                foreach (var button in allButtons)
+                {
+                    button.ClearValue(ContentProperty);
+                }
+
+                EnableBoard();
+                ChooseFirstTurn();
+                UpdateNameAndResult();
+
+                if (!_player.FirstTurn)
+                {
+                    CpuPlaysRandom();
+                }
             }
-
-            List<Button> allButtons = Board.Children.OfType<Button>().ToList();
-
-            foreach (var button in allButtons)
+            catch (Exception ex)
             {
-                button.ClearValue(ContentProperty);
-            }
-
-            EnableBoard();
-            ChooseFirstTurn();
-
-            if (!_player.FirstTurn)
-            {
-                CpuPlaysRandom();
+                HandleError("Sorry, an error have occured while starting a new game :-\\ \n" +
+                    "Try shutting down and starting over.", ex);
             }
         }
 
 
         private void NewGame(object sender, RoutedEventArgs e)
         {
-            _winner = "";
-            for (int i = 0; i < _board.Length; i++)
+            try
             {
-                _board[i] = MarkType.EMPTY;
+                _winner = "";
+                for (int i = 0; i < _board.Length; i++)
+                {
+                    _board[i] = MarkType.EMPTY;
+                }
+
+                List<Button> allButtons = Board.Children.OfType<Button>().ToList();
+
+                foreach (var button in allButtons)
+                {
+                    button.ClearValue(ContentProperty);
+                }
+
+                EnableBoard();
+                ChooseFirstTurn();
+                UpdateNameAndResult();
+
+                if (!_player.FirstTurn)
+                {
+                    CpuPlaysRandom();
+                }
             }
-
-            List<Button> allButtons = Board.Children.OfType<Button>().ToList();
-
-            foreach (var button in allButtons)
+            catch (Exception ex)
             {
-                button.ClearValue(ContentProperty);
-            }
-
-            EnableBoard();
-            ChooseFirstTurn();
-
-            if (!_player.FirstTurn)
-            {
-                CpuPlaysRandom();
+                HandleError("Sorry, an error have occured while starting a new game :-\\ \n" +
+                    "Try shutting down and starting over.", ex);
             }
         }
 
 
         private void ChooseFirstTurn()
         {
-            MessageBoxResult firstTurnResult = MessageBox.Show("Do you want to go first?", "First turn", MessageBoxButton.YesNo);
+            try
+            {
+                MessageBoxResult firstTurnResult = MessageBox.Show("Do you want to go first?", "First turn", MessageBoxButton.YesNo);
 
-            if (firstTurnResult == MessageBoxResult.Yes)
-            {
-                _player.FirstTurn = true;
-                _player.Mark = MarkType.X;
-                _cpuAi.Mark = MarkType.O;
+                if (firstTurnResult == MessageBoxResult.Yes)
+                {
+                    _player.FirstTurn = true;
+                    _player.Mark = MarkType.X;
+                    _cpuAi.Mark = MarkType.O;
+                }
+                else
+                {
+                    _player.FirstTurn = false;
+                    _player.Mark = MarkType.O;
+                    _cpuAi.Mark = MarkType.X;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _player.FirstTurn = false;
-                _player.Mark = MarkType.O;
-                _cpuAi.Mark = MarkType.X;
+                HandleError("Sorry, an error have occured :-\\ \n", ex);
             }
         }
 
 
         private void AddPlayerName()
         {
-            NameDialogBox nameDialogBox = new NameDialogBox(_player);
-            nameDialogBox.ShowDialog();
-
+            try
+            {
+                NameDialogBox nameDialogBox = new NameDialogBox(_player);
+                nameDialogBox.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                HandleError("Sorry, an error have occured while saving player's name :-\\", ex);
+            }
         }
 
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Button button = (Button)sender;
-            int index = _buttonIndex[button.Name.ToString()];
-
-            if(button.Content == null && _board[index] == MarkType.EMPTY)
+            try
             {
-                _board[index] = _player.Mark;
-                button.Content = _player.Mark;
-
-                if(GameOver())
+                Button button = (Button)sender;
+                if (button == null || !_buttonIndex.TryGetValue(button.Name, out int index))
                 {
-                    PresentWinner();
-                    return;
+                    throw new InvalidOperationException("Invalid button click detected.");
                 }
 
-                // If board is not full && game not over - pause a moment (and maybe display some loading text) then let cpu ai play a random or not so random turn (Progressbar for effect? ;-)
+                if (button.Content == null && _board[index] == MarkType.EMPTY && !_cpuAi.Turn)
+                {
+                    _board[index] = _player.Mark;
+                    button.Content = _player.Mark;
+                    _cpuAi.Turn = true;
+
+                    if (GameOver())
+                    {
+                        PresentWinner();
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleError("Sorry, an error occurred during player's turn.", ex);
+            }
+
+            try
+            {
                 CpuPlaysRandom();
 
                 if (GameOver())
@@ -179,35 +241,50 @@ namespace TicTacToeWPF
                     return;
                 }
             }
+            catch (Exception ex)
+            {
+                HandleError("Sorry, an error occurred during CpuAI's turn.", ex);
+            }
         }
 
 
         //CpuPlaysSmart()
-        // disable buttons for a moment
         // calls separate logic class 
 
 
         // Only called when Cpu plays first turn
         private void CpuPlaysRandom()
         {
-            Random cpuRandom = new();
-            int index = -1;
-            while (index == -1 || _board[index] != MarkType.EMPTY)
+            try
             {
-                index = cpuRandom.Next(_board.Length);
+                Random cpuRandom = new();
+                int index;
+
+                do
+                {
+                    index = cpuRandom.Next(_board.Length);
+                } while (_board[index] != MarkType.EMPTY);
+
+                _board[index] = _cpuAi.Mark;
+                Button button = new();
+                button = (Button)this.FindName(_buttonIndex.FirstOrDefault(b => b.Value == index).Key);
+                button.Content = _cpuAi.Mark;
+                _cpuAi.Turn = false;
             }
-            _board[index] = _cpuAi.Mark;
-            Button button = new();
-            button = (Button)this.FindName(_buttonIndex.FirstOrDefault(b => b.Value == index).Key);
-            button.Content = _cpuAi.Mark;
+            catch (Exception ex)
+            {
+                HandleError("Sorry, an error occurred during CpuAI's turn.", ex);
+            }
         }
 
 
         //Evaluates if anyone has won the game or if the board is full, called before each turn
         private bool GameOver()
         {
-            MarkType[][] _winningCombinations =
+            try
             {
+                MarkType[][] _winningCombinations =
+{
                 new MarkType[] {_board[0], _board[1], _board[2] }, // Top row
                 new MarkType[] {_board[3], _board[4], _board[5] }, // Middle row
                 new MarkType[] {_board[6], _board[7], _board[8] }, // Bottom row
@@ -218,50 +295,63 @@ namespace TicTacToeWPF
                 new MarkType[] {_board[2], _board[4], _board[6] }, // Diagonal from top right
             };
 
-            foreach(MarkType[] combination in _winningCombinations)
-            {
-                if (combination[0] == _cpuAi.Mark &&
-                    combination[1] == _cpuAi.Mark &&
-                    combination[2] == _cpuAi.Mark)
+                foreach (MarkType[] combination in _winningCombinations)
                 {
-                    _winner = _cpuAi.Name;
+                    if (combination[0] == _cpuAi.Mark &&
+                        combination[1] == _cpuAi.Mark &&
+                        combination[2] == _cpuAi.Mark)
+                    {
+                        _winner = _cpuAi.Name;
+                        return true;
+                    }
+                    else if (combination[0] == _player.Mark &&
+                        combination[1] == _player.Mark &&
+                        combination[2] == _player.Mark)
+                    {
+                        _winner = _player.Name;
+                        return true;
+                    }
+                }
+                if (!_board.Contains(MarkType.EMPTY))
+                {
                     return true;
                 }
-                else if (combination[0] == _player.Mark &&
-                    combination[1] == _player.Mark &&
-                    combination[2] == _player.Mark)
-                {
-                    _winner = _player.Name;
-                    return true;
-                }
+                return false;
             }
-            if (!_board.Contains(MarkType.EMPTY))
+            catch (Exception ex)
             {
-                return true;
+                HandleError("An error unfortunately occurred while checking the game status.", ex);
+                return false;
             }
-            return false;
         }
 
 
         private void PresentWinner()
         {
-            DisableBoard();
+            try
+            {
+                DisableBoard();
 
-            if (_winner == _player.Name)
-            {
-                MessageBox.Show($"The winner is {_winner}", "Congatulations!");
-                _player.Score++;
+                if (_winner == _player.Name)
+                {
+                    MessageBox.Show($"The winner is {_winner}", "Congatulations!");
+                    _player.Score++;
+                }
+                else if (_winner == _cpuAi.Name)
+                {
+                    MessageBox.Show($"The winner is {_winner}", "You lost!");
+                    _cpuAi.Score++;
+                }
+                else
+                {
+                    MessageBox.Show("Game is a tie", "Try again!");
+                }
+                UpdateNameAndResult();
             }
-            else if(_winner == _cpuAi.Name)
+            catch (Exception ex)
             {
-                MessageBox.Show($"The winner is {_winner}", "You lost!");
-                _cpuAi.Score++;
+                HandleError("An error occurred while presenting the winner.", ex);
             }
-            else
-            {
-                MessageBox.Show("Game is a tie", "Try again!");
-            }
-            UpdateNameAndResult();
         }
 
 
@@ -289,7 +379,9 @@ namespace TicTacToeWPF
         private void UpdateNameAndResult()
         {
             playerResult = $"{_player.Name} ({_player.Mark}): {_player.Score}";
+            OnPropertyChanged(nameof(PlayerResult));
             cpuAiResult = $"{_cpuAi.Name} ({_cpuAi.Mark}): {_cpuAi.Score}";
+            OnPropertyChanged(nameof(CpuAiResult));
         }
 
 
@@ -304,11 +396,10 @@ namespace TicTacToeWPF
                 "Made with <3 november 2024", "About this game");
         }
 
-        // Entities: Player, CPU-_player, signs(X/O), board, buttons, current score
-        // Start new game (immediatly?)
-        // Choose if you want to start (play X) or if AI should start
-        // When button is klicked with mouse it is filled with X or O
-        // When three of the same sign are in a row, the game is stopped and _winner is announced
-        // Simple score keeping?
+
+        private void HandleError(string message, Exception ex)
+        {
+            MessageBox.Show($"{message}\n\nError Details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }

@@ -71,7 +71,7 @@
                 <Button x:Name="Button8" Grid.Row="2" Grid.Column="2" Click="Button_Click"></Button>
             </Grid>
             <!---->
-            <StackPanel Name="ScorePanel" Grid.Column="1" Grid.Row="1" Width="150" Height="620" HorizontalAlignment="Right">
+            <StackPanel Name="ScorePanel" Grid.Column="1" Grid.Row="1" Width="150" Height="620">
                 <Image Grid.Row="1"
                    Source="/Images/Ai_blue_2560x1440.jpg"
                    RenderOptions.BitmapScalingMode="Fant"
@@ -81,8 +81,10 @@
                    VerticalAlignment="Top"
                    Margin="0,0,0,0"
                    HorizontalAlignment="Left" />
-                <Label Name="HumanScore" FontSize="16" VerticalContentAlignment="Bottom" Content="{Binding PlayerResult, UpdateSourceTrigger=PropertyChanged}"></Label>
-                <Label Name="CpuScore" FontSize="16" VerticalContentAlignment="Bottom" Content="{Binding PlayerResult, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <StackPanel Height="70" VerticalAlignment="Bottom">
+                    <Label Name="HumanScore" FontSize="15" Grid.Row="1" Content="{Binding PlayerResult, UpdateSourceTrigger=PropertyChanged}"></Label>
+                    <Label Name="CpuScore" FontSize="15" Grid.Row="1" Content="{Binding CpuAiResult, UpdateSourceTrigger=PropertyChanged}"></Label>
+                </StackPanel>
             </StackPanel>
         </Grid>                                                  
     </Border>

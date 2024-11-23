@@ -27,33 +27,66 @@ namespace TicTacToeWPF.UiComponents
         public NameDialogBox(Player player)
         {
             _player = player;
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                HandleError("Couldn't load name window.", ex);
+            }
         }
 
         private void RecieveUserInput(object sender, RoutedEventArgs e)
         {
-            NamePlaceholder.Visibility = Visibility.Hidden;
-            UserNameTextBox.Focus();
+            try
+            {
+                NamePlaceholder.Visibility = Visibility.Hidden;
+                UserNameTextBox.Focus();
+            }
+            catch (Exception ex)
+            {
+                HandleError("Something went wrong.", ex);
+            }
         }
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(UserNameTextBox.Text))
+            try
             {
-                _player.Name = UserNameTextBox.Text;
+                if (!string.IsNullOrEmpty(UserNameTextBox.Text))
+                {
+                    _player.Name = UserNameTextBox.Text;
+                }
+                else
+                {
+                    _player.Name = "Player One";
+                }
+                DialogResult = true;
             }
-            else
+            catch (Exception ex)
             {
-                _player.Name = "Player One";
+                HandleError("Something went wrong.", ex);
             }
-            DialogResult = true;
         }
 
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            _player.Name = "Player One";
-            DialogResult = false;
+            try
+            {
+                _player.Name = "Player One";
+                DialogResult = false;
+            }
+            catch
+            {
+                HandleError("Something went wrong.", ex);
+            }
+        }
+
+        private void HandleError(string message, Exception ex)
+        {
+            MessageBox.Show($"{message}\n\nError Details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }
